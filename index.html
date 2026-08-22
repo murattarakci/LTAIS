@@ -146,14 +146,6 @@
   .exporting .byline .who:empty::before { content: ""; }
 
   /* ---------- Controls ---------- */
-  .hint {
-    text-align: center;
-    font-size: 14px;
-    font-weight: 300;
-    color: #3a4066;
-    margin-top: 14px;
-  }
-
   .actions {
     display: flex;
     flex-wrap: wrap;
@@ -187,15 +179,6 @@
   }
   .btn-outline:hover { background: var(--imd-light-blue); }
   .btn svg { width: 17px; height: 17px; flex: none; }
-
-  .share-note {
-    text-align: center;
-    font-size: 13px;
-    font-weight: 300;
-    color: #6a6f8e;
-    margin-top: 14px;
-    max-width: 520px;
-  }
 
   .promo {
     margin-top: 46px;
@@ -266,7 +249,7 @@
 
 <div class="intro">
   <h1>Redefine your job as a leader</h1>
-  <p>Fill in the two blanks — <strong>everything on the card is editable</strong>, just tap the text. Then download your card or share it.</p>
+  <p>Fill in the blanks. <strong>Everything on the card is editable</strong>, just tap the text.</p>
 </div>
 
 <div class="card-wrap">
@@ -291,8 +274,6 @@
   </div>
 </div>
 
-<p class="hint">Tap any text on the card to edit it. The dotted underlines are your blanks.</p>
-
 <div class="actions">
   <button class="btn btn-primary" id="btn-download">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -312,11 +293,9 @@
   </button>
 </div>
 
-<p class="share-note">Sharing opens a pre-filled post with your statement. Your card image downloads automatically — attach it to the post before publishing.</p>
-
 <footer class="promo">
   <div class="promo-text">
-    <h2>Leading in the Age of AI — an IMD Sprint</h2>
+    <h2>Leading in the Age of AI: an IMD Sprint</h2>
     <p>This exercise is part of IMD's Leadership in the Age of AI Sprint. Rewire how you lead when AI joins the team.</p>
   </div>
   <a class="btn-promo" href="https://www.imd.org/sprint/leadership-ai/" target="_blank" rel="noopener">Explore the program →</a>
@@ -388,7 +367,7 @@
       return true;
     } catch (err) {
       console.error(err);
-      showToast("Could not generate the image — try again.");
+      showToast("Could not generate the image. Try again.");
       return false;
     }
   }
@@ -400,14 +379,14 @@
     const url = "https://www.linkedin.com/feed/?shareActive=true&text=" + encodeURIComponent(shareText());
     window.open(url, "_blank", "noopener");
     downloadCard(true);
-    showToast("Image downloaded — attach it to your LinkedIn post");
+    showToast("Image downloaded. Attach it to your LinkedIn post.");
   });
 
   document.getElementById("btn-x").addEventListener("click", () => {
     const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(shareText());
     window.open(url, "_blank", "noopener");
     downloadCard(true);
-    showToast("Image downloaded — attach it to your post on X");
+    showToast("Image downloaded. Attach it to your post on X.");
   });
 
   /* --- native share with the image itself (mobile) --- */
@@ -423,7 +402,7 @@
       const file = new File([blob], "my-leadership-card.png", { type: "image/png" });
       await navigator.share({ files: [file], text: shareText() });
     } catch (err) {
-      if (err.name !== "AbortError") { console.error(err); showToast("Sharing failed — use Download instead."); }
+      if (err.name !== "AbortError") { console.error(err); showToast("Sharing failed. Use Download instead."); }
     }
   });
 })();
