@@ -272,9 +272,9 @@
     </div>
 
     <div>
-      <p class="statement" id="statement"><span contenteditable="true" spellcheck="false">My job as a leader is not</span> <span class="blank" contenteditable="true" spellcheck="false" data-ph="having answers"></span><span contenteditable="true" spellcheck="false">, but</span> <span class="blank" contenteditable="true" spellcheck="false" data-ph="asking questions"></span><span contenteditable="true" spellcheck="false">.</span></p>
+      <p class="statement" id="statement"><span contenteditable="true" spellcheck="true">My job as a leader is not</span> <span class="blank" contenteditable="true" spellcheck="true" data-ph="having answers"></span><span contenteditable="true" spellcheck="true">, but</span> <span class="blank" contenteditable="true" spellcheck="true" data-ph="asking questions"></span><span contenteditable="true" spellcheck="true">.</span></p>
       <div class="card-footer">
-        <p class="byline">— <span class="who" contenteditable="true" spellcheck="false" data-ph="your name"></span></p>
+        <p class="byline">— <span class="who" contenteditable="true" spellcheck="true" data-ph="your name"></span></p>
         <a class="card-program" href="https://www.imd.org/sprint/leadership-ai/" target="_blank" rel="noopener">imd.org/sprint/leadership-ai</a>
       </div>
     </div>
@@ -301,9 +301,9 @@
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.64 7.58H.47l8.6-9.83L0 1.15h7.59l5.24 6.93 6.07-6.93zm-1.29 19.5h2.04L6.49 3.24H4.3l13.31 17.41z"/></svg>
         Share on X
       </button>
-      <button class="menu-item" id="btn-native" hidden>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-        Share image…
+      <button class="menu-item" id="btn-signature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+        Copy as email signature
       </button>
     </div>
   </div>
@@ -435,20 +435,49 @@
     showToast("Image downloaded. Attach it to your post on X.");
   });
 
-  /* --- native share with the image itself (mobile) --- */
-  const nativeBtn = document.getElementById("btn-native");
-  if (navigator.canShare) {
-    const probe = new File([""], "card.png", { type: "image/png" });
-    if (navigator.canShare({ files: [probe] })) nativeBtn.hidden = false;
+  /* --- email signature: rich text on the clipboard, ready to paste into Outlook --- */
+  function escHtml(s) {
+    return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
-  nativeBtn.addEventListener("click", async () => {
+
+  function signatureHTML() {
+    const d = window.__cardData();
+    const b1 = d.blank1 ? '<span style="color:#005DC4;">' + escHtml(d.blank1) + "</span>" : "____";
+    const b2 = d.blank2 ? '<span style="color:#005DC4;">' + escHtml(d.blank2) + "</span>" : "____";
+    const stmt = document.querySelectorAll("#statement > span");
+    const p1 = escHtml(stmt[0].textContent.trim());
+    const p2 = escHtml(stmt[2].textContent.trim().replace(/^,\s*/, ""));
+    return (
+      '<table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,Helvetica,sans-serif;">' +
+      '<tr><td style="border-left:3px solid #005DC4;padding:4px 0 4px 14px;">' +
+      '<div style="font-size:15px;line-height:1.45;color:#000A56;font-weight:bold;">&ldquo;' +
+      p1 + " " + b1 + ", " + p2 + " " + b2 + '.&rdquo;</div>' +
+      (d.name ? '<div style="font-size:13px;color:#000A56;padding-top:5px;">' + escHtml(d.name) + "</div>" : "") +
+      '<div style="font-size:12px;padding-top:3px;"><a href="' + PROGRAM_URL +
+      '" style="color:#005DC4;text-decoration:none;">IMD / Leading in the Age of AI Sprint</a></div>' +
+      "</td></tr></table>"
+    );
+  }
+
+  document.getElementById("btn-signature").addEventListener("click", async () => {
+    const html = signatureHTML();
+    const plain = shareText();
     try {
-      const dataUrl = await renderCard();
-      const blob = await (await fetch(dataUrl)).blob();
-      const file = new File([blob], "my-leadership-card.png", { type: "image/png" });
-      await navigator.share({ files: [file], text: shareText() });
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "text/html": new Blob([html], { type: "text/html" }),
+          "text/plain": new Blob([plain], { type: "text/plain" })
+        })
+      ]);
+      showToast("Signature copied. In Outlook: Settings → Signatures → paste.");
     } catch (err) {
-      if (err.name !== "AbortError") { console.error(err); showToast("Sharing failed. Use Download instead."); }
+      try {
+        await navigator.clipboard.writeText(plain);
+        showToast("Copied as plain text. Paste it into your Outlook signature.");
+      } catch (e2) {
+        console.error(err, e2);
+        showToast("Could not copy. Select the card text and copy it manually.");
+      }
     }
   });
 })();
@@ -478,7 +507,7 @@ if (window.FIREBASE_CONFIG) {
       } catch (e) { console.warn("card submit failed", e); }
     }
 
-    for (const id of ["btn-download", "btn-linkedin", "btn-x", "btn-native"]) {
+    for (const id of ["btn-download", "btn-linkedin", "btn-x", "btn-signature"]) {
       document.getElementById(id).addEventListener("click", submitCard);
     }
 
