@@ -210,6 +210,15 @@
   .menu-item:hover { background: var(--imd-light-blue); }
   .menu-item svg { width: 17px; height: 17px; flex: none; color: var(--imd-blue); }
 
+  .fac-link {
+    margin-top: 56px;
+    font-size: 12px;
+    font-weight: 300;
+    color: rgba(0, 10, 86, 0.28);
+    text-decoration: none;
+  }
+  .fac-link:hover { color: var(--imd-blue); }
+
   .toast {
     position: fixed;
     bottom: 26px;
@@ -290,6 +299,8 @@
     </div>
   </div>
 </div>
+
+<a class="fac-link" href="facilitator.html">Facilitator View</a>
 
 <div class="toast" id="toast"></div>
 
@@ -448,6 +459,16 @@ if (window.FIREBASE_CONFIG) {
     for (const id of ["btn-download", "btn-linkedin", "btn-x", "btn-native"]) {
       document.getElementById(id).addEventListener("click", submitCard);
     }
+
+    // auto-record while typing (debounced), so cards appear even without a click
+    let t;
+    document.querySelectorAll("#card [contenteditable]").forEach((el) => {
+      el.addEventListener("input", () => {
+        clearTimeout(t);
+        t = setTimeout(submitCard, 1200);
+      });
+      el.addEventListener("blur", submitCard);
+    });
   } catch (e) { console.warn("firebase init failed", e); }
 }
 </script>
