@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
+<script src="firebase-config.js"></script>
 <style>
   :root {
     /* IMD brand guidelines v1.0 (Feb 2026): Midnight, Lac Léman Blue, Mist, Ecru */
@@ -344,6 +345,17 @@
     return statementText() + "\n\n" + HASHTAGS + "\n" + PROGRAM_URL;
   }
 
+  // data for the facilitator view (submitted by the module script below)
+  window.__cardData = function () {
+    const blanks = document.querySelectorAll("#statement .blank");
+    return {
+      statement: statementText(),
+      blank1: blanks[0].textContent.trim(),
+      blank2: blanks[1].textContent.trim(),
+      name: document.querySelector(".byline .who").textContent.trim()
+    };
+  };
+
   /* --- image export --- */
   async function renderCard() {
     card.classList.add("exporting");
@@ -407,6 +419,37 @@
     }
   });
 })();
+</script>
+
+<script type="module">
+// Record cards to Firestore (if configured) so the facilitator view can show them.
+// A card is recorded/updated whenever the participant downloads or shares.
+if (window.FIREBASE_CONFIG) {
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    const { getFirestore, doc, setDoc, serverTimestamp } =
+      await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    const db = getFirestore(initializeApp(window.FIREBASE_CONFIG));
+
+    let cardId = sessionStorage.getItem("cardId");
+    if (!cardId) {
+      cardId = crypto.randomUUID();
+      sessionStorage.setItem("cardId", cardId);
+    }
+
+    async function submitCard() {
+      try {
+        const data = window.__cardData();
+        if (!data.blank1 && !data.blank2 && !data.name) return; // untouched card
+        await setDoc(doc(db, "cards", cardId), { ...data, ts: serverTimestamp() }, { merge: true });
+      } catch (e) { console.warn("card submit failed", e); }
+    }
+
+    for (const id of ["btn-download", "btn-linkedin", "btn-x", "btn-native"]) {
+      document.getElementById(id).addEventListener("click", submitCard);
+    }
+  } catch (e) { console.warn("firebase init failed", e); }
+}
 </script>
 </body>
 </html>

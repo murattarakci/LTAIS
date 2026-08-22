@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Facilitator View | IMD AI Leadership Sprint</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script src="firebase-config.js"></script>
+<style>
+  :root {
+    --imd-navy: #000A56;
+    --imd-blue: #005DC4;
+    --imd-light-blue: #D7EAF7;
+    --imd-ecru: #F5F4EE;
+    --imd-white: #FFFFFF;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+    background: var(--imd-ecru);
+    color: var(--imd-navy);
+    min-height: 100vh;
+  }
+
+  /* ---------- password gate ---------- */
+  #gate {
+    position: fixed; inset: 0;
+    background: var(--imd-navy);
+    background-image: radial-gradient(rgba(255,255,255,0.18) 1.1px, transparent 1.1px);
+    background-size: 26px 26px;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+  }
+  .gate-box { text-align: center; padding: 20px; }
+  .gate-box h1 { color: var(--imd-white); font-weight: 700; font-size: 26px; margin-bottom: 18px; }
+  .gate-box input {
+    font-family: inherit; font-size: 17px;
+    padding: 13px 18px; border-radius: 999px; border: none;
+    width: 280px; text-align: center; outline: none;
+  }
+  .gate-box button {
+    font-family: inherit; font-size: 16px; font-weight: 600;
+    margin-left: 10px; padding: 13px 26px; border-radius: 999px;
+    border: none; background: var(--imd-blue); color: var(--imd-white); cursor: pointer;
+  }
+  .gate-error { color: #FC6B27; font-size: 14px; margin-top: 14px; min-height: 18px; }
+
+  /* ---------- header ---------- */
+  header {
+    background: var(--imd-navy);
+    color: var(--imd-white);
+    padding: 18px 28px;
+    display: flex; align-items: center; gap: 22px; flex-wrap: wrap;
+  }
+  header .brand { font-weight: 700; font-size: 19px; letter-spacing: -0.01em; }
+  header .count { font-weight: 300; font-size: 15px; color: var(--imd-light-blue); }
+  .filters { margin-left: auto; display: flex; gap: 10px; flex-wrap: wrap; }
+  .filter-btn {
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    padding: 9px 18px; border-radius: 999px; cursor: pointer;
+    border: 2px solid var(--imd-light-blue);
+    background: transparent; color: var(--imd-light-blue);
+  }
+  .filter-btn.active { background: var(--imd-white); border-color: var(--imd-white); color: var(--imd-navy); }
+
+  /* ---------- card grid ---------- */
+  #grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(330px, 100%), 1fr));
+    gap: 18px;
+    padding: 26px;
+  }
+  .mini {
+    background: var(--imd-navy);
+    background-image: radial-gradient(rgba(255,255,255,0.16) 1px, transparent 1px);
+    background-size: 20px 20px;
+    border-radius: 8px;
+    padding: 24px 26px;
+    color: var(--imd-white);
+    display: flex; flex-direction: column; justify-content: space-between;
+    min-height: 175px;
+    box-shadow: 0 8px 22px rgba(0, 10, 86, 0.15);
+  }
+  .mini .text { font-weight: 600; font-size: 21px; line-height: 1.25; letter-spacing: -0.01em; }
+  .mini .text .fill { color: #9FE1FF; }
+  .mini .meta { margin-top: 16px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .mini .who { font-weight: 400; font-size: 15px; color: rgba(255,255,255,0.9); }
+  .mini .when { font-weight: 300; font-size: 12px; color: rgba(255,255,255,0.5); white-space: nowrap; }
+
+  #empty {
+    text-align: center; padding: 80px 20px;
+    font-weight: 300; font-size: 17px; color: #3a4066;
+  }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-box">
+    <h1>Facilitator View</h1>
+    <form id="gate-form">
+      <input type="password" id="pw" placeholder="Password" autocomplete="off" autofocus>
+      <button type="submit">Enter</button>
+    </form>
+    <p class="gate-error" id="gate-error"></p>
+  </div>
+</div>
+
+<header>
+  <span class="brand">IMD / Facilitator View</span>
+  <span class="count" id="count"></span>
+  <div class="filters">
+    <button class="filter-btn" id="f-today">Today only</button>
+    <button class="filter-btn" id="f-named">Completed with name</button>
+  </div>
+</header>
+
+<div id="grid"></div>
+<p id="empty" hidden>No cards yet. They appear here live as participants download or share.</p>
+
+<script type="module">
+const PW_HASH = "cdb4f02f7ea15f1fbc38f389e5454374b3287e1bbe5ec6610c8d0f8b2c39da1f";
+
+async function sha256(s) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+const gate = document.getElementById("gate");
+document.getElementById("gate-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const ok = (await sha256(document.getElementById("pw").value)) === PW_HASH;
+  if (ok) {
+    sessionStorage.setItem("fac", "1");
+    gate.remove();
+    start();
+  } else {
+    document.getElementById("gate-error").textContent = "Wrong password.";
+  }
+});
+if (sessionStorage.getItem("fac") === "1") { gate.remove(); start(); }
+
+let cards = [];
+let todayOnly = false;
+let namedOnly = false;
+
+const grid = document.getElementById("grid");
+const empty = document.getElementById("empty");
+const countEl = document.getElementById("count");
+
+function esc(s) {
+  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function render() {
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+  const shown = cards.filter((c) => {
+    if (todayOnly && (!c.ts || c.ts < startOfDay)) return false;
+    if (namedOnly && !(c.name && c.blank1 && c.blank2)) return false;
+    return true;
+  });
+  countEl.textContent = shown.length + " card" + (shown.length === 1 ? "" : "s");
+  empty.hidden = shown.length > 0;
+  grid.innerHTML = shown.map((c) => {
+    const b1 = c.blank1 ? '<span class="fill">' + esc(c.blank1) + "</span>" : "____";
+    const b2 = c.blank2 ? '<span class="fill">' + esc(c.blank2) + "</span>" : "____";
+    const when = c.ts
+      ? c.ts.toLocaleString([], { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })
+      : "";
+    return (
+      '<div class="mini"><p class="text">My job as a leader is not ' + b1 + ", but " + b2 + ".</p>" +
+      '<div class="meta"><span class="who">' + (c.name ? "&mdash; " + esc(c.name) : "") + "</span>" +
+      '<span class="when">' + when + "</span></div></div>"
+    );
+  }).join("");
+}
+
+document.getElementById("f-today").addEventListener("click", (e) => {
+  todayOnly = !todayOnly; e.target.classList.toggle("active", todayOnly); render();
+});
+document.getElementById("f-named").addEventListener("click", (e) => {
+  namedOnly = !namedOnly; e.target.classList.toggle("active", namedOnly); render();
+});
+
+let started = false;
+async function start() {
+  if (started) return;
+  started = true;
+  if (!window.FIREBASE_CONFIG) {
+    empty.hidden = false;
+    empty.textContent = "Firebase is not configured yet. Fill in firebase-config.js to start collecting cards.";
+    return;
+  }
+  const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+  const { getFirestore, collection, query, orderBy, onSnapshot } =
+    await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+  const db = getFirestore(initializeApp(window.FIREBASE_CONFIG));
+  onSnapshot(query(collection(db, "cards"), orderBy("ts", "desc")), (snap) => {
+    cards = snap.docs.map((d) => {
+      const v = d.data();
+      return {
+        statement: v.statement || "",
+        blank1: (v.blank1 || "").trim(),
+        blank2: (v.blank2 || "").trim(),
+        name: (v.name || "").trim(),
+        ts: v.ts && v.ts.toDate ? v.ts.toDate() : null
+      };
+    });
+    render();
+  });
+}
+</script>
+</body>
+</html>
