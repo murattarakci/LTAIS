@@ -20,13 +20,14 @@
 //
 // Until this is filled in, the card page works normally and simply
 // does not record submissions; the facilitator view shows a notice.
-window.FIREBASE_CONFIG = null;
-// Example:
-// window.FIREBASE_CONFIG = {
-//   apiKey: "...",
-//   authDomain: "ltais-cards.firebaseapp.com",
-//   projectId: "ltais-cards",
-//   storageBucket: "ltais-cards.appspot.com",
-//   messagingSenderId: "...",
-//   appId: "..."
-// };
+//
+// These values are public identifiers, not secrets: access is controlled by
+// the Firestore rules above, not by hiding this config.
+window.FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDIClcTcAoWxgmHvtoWN7YZduICwxdAYKA",
+  authDomain: "ltais-f31a0.firebaseapp.com",
+  projectId: "ltais-f31a0",
+  storageBucket: "ltais-f31a0.firebasestorage.app",
+  messagingSenderId: "953468160360",
+  appId: "1:953468160360:web:3d1388541e46bc1b2faedd"
+};
