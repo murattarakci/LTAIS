@@ -323,11 +323,24 @@
   document.addEventListener("click", (e) => { if (!menu.hidden && !menu.contains(e.target)) setMenu(false); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") setMenu(false); });
 
+  /* --- auto-fit: shrink the statement font when long text would overflow the card --- */
+  const stmtEl = document.getElementById("statement");
+  function fitText() {
+    let size = 6.4; // cqw, the design size
+    stmtEl.style.fontSize = size + "cqw";
+    while (size > 3 && card.scrollHeight > card.clientHeight + 1) {
+      size -= 0.2;
+      stmtEl.style.fontSize = size.toFixed(1) + "cqw";
+    }
+  }
+  window.addEventListener("resize", fitText);
+
   /* --- editing behaviour: single line, plain text only --- */
   document.querySelectorAll("[contenteditable]").forEach((el) => {
     el.addEventListener("keydown", (e) => {
       if (e.key === "Enter") { e.preventDefault(); el.blur(); }
     });
+    el.addEventListener("input", fitText);
     el.addEventListener("paste", (e) => {
       e.preventDefault();
       const text = (e.clipboardData || window.clipboardData).getData("text/plain");

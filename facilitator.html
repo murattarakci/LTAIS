@@ -310,11 +310,22 @@ function render() {
 
 /* ---------- full-screen view ---------- */
 const big = document.getElementById("big");
+function fitBig() {
+  const stmt = document.getElementById("big-stmt");
+  let size = Math.max(20, Math.min(window.innerWidth * 0.056, 84));
+  stmt.style.fontSize = size + "px";
+  while (size > 16 && big.scrollHeight > big.clientHeight + 1) {
+    size -= 2;
+    stmt.style.fontSize = size + "px";
+  }
+}
 function openBig(c) {
   document.getElementById("big-stmt").innerHTML = stmtHTML(c);
   document.getElementById("big-nm").innerHTML = c.name ? "&mdash; " + esc(c.name) : "";
   big.hidden = false;
+  fitBig();
 }
+window.addEventListener("resize", () => { if (!big.hidden) fitBig(); });
 function closeBig() { big.hidden = true; }
 document.getElementById("big-close").addEventListener("click", closeBig);
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeBig(); });
