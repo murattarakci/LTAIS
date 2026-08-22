@@ -121,10 +121,11 @@
   }
 
   .byline {
-    color: rgba(255, 255, 255, 0.75);
-    font-weight: 300;
-    font-size: 2.6cqw;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 400;
+    font-size: 3.4cqw;
     letter-spacing: 0.02em;
+    margin-top: 0.4em;
   }
 
   .card-program {
@@ -143,44 +144,70 @@
   }
   .byline .who:empty::before {
     content: attr(data-ph);
-    color: rgba(255, 255, 255, 0.32);
+    color: rgba(255, 255, 255, 0.45);
   }
   .exporting .byline .who:empty::before { content: ""; }
 
   /* ---------- Controls ---------- */
   .actions {
     display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
     justify-content: center;
     margin-top: 22px;
   }
+
+  .menu-wrap { position: relative; }
 
   .btn {
     font-family: inherit;
     font-size: 15px;
     font-weight: 600;
-    padding: 13px 22px;
+    padding: 13px 24px;
     border-radius: 999px;
     cursor: pointer;
     border: 2px solid var(--imd-blue);
+    background: var(--imd-blue);
+    color: var(--imd-white);
     transition: transform 0.08s ease, box-shadow 0.15s ease;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 9px;
   }
+  .btn:hover { box-shadow: 0 6px 18px rgba(0, 93, 196, 0.35); }
   .btn:active { transform: scale(0.97); }
-  .btn-primary {
-    background: var(--imd-blue);
-    color: var(--imd-white);
-  }
-  .btn-primary:hover { box-shadow: 0 6px 18px rgba(0, 93, 196, 0.35); }
-  .btn-outline {
-    background: transparent;
-    color: var(--imd-blue);
-  }
-  .btn-outline:hover { background: var(--imd-light-blue); }
   .btn svg { width: 17px; height: 17px; flex: none; }
+  .btn .chev { width: 13px; height: 13px; transition: transform 0.15s ease; }
+  .btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
+
+  .menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--imd-white);
+    border-radius: 14px;
+    box-shadow: 0 10px 34px rgba(0, 10, 86, 0.22);
+    padding: 8px;
+    min-width: 235px;
+    z-index: 100;
+  }
+  .menu-item {
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--imd-navy);
+    background: none;
+    border: none;
+    border-radius: 9px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+  }
+  .menu-item:hover { background: var(--imd-light-blue); }
+  .menu-item svg { width: 17px; height: 17px; flex: none; color: var(--imd-blue); }
 
   .toast {
     position: fixed;
@@ -236,22 +263,31 @@
 </div>
 
 <div class="actions">
-  <button class="btn btn-primary" id="btn-download">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-    Download card
-  </button>
-  <button class="btn btn-outline" id="btn-linkedin">
-    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
-    Share on LinkedIn
-  </button>
-  <button class="btn btn-outline" id="btn-x">
-    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.64 7.58H.47l8.6-9.83L0 1.15h7.59l5.24 6.93 6.07-6.93zm-1.29 19.5h2.04L6.49 3.24H4.3l13.31 17.41z"/></svg>
-    Share on X
-  </button>
-  <button class="btn btn-outline" id="btn-native" hidden>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/></svg>
-    Share image…
-  </button>
+  <div class="menu-wrap">
+    <button class="btn" id="btn-menu" aria-haspopup="true" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/></svg>
+      Share or download
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="menu" id="menu" hidden>
+      <button class="menu-item" id="btn-download">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download card
+      </button>
+      <button class="menu-item" id="btn-linkedin">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+        Share on LinkedIn
+      </button>
+      <button class="menu-item" id="btn-x">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.64 7.58H.47l8.6-9.83L0 1.15h7.59l5.24 6.93 6.07-6.93zm-1.29 19.5h2.04L6.49 3.24H4.3l13.31 17.41z"/></svg>
+        Share on X
+      </button>
+      <button class="menu-item" id="btn-native" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+        Share image…
+      </button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -262,6 +298,18 @@
   const toast = document.getElementById("toast");
   const HASHTAGS = "#Leadership #IMD #AILeadershipSprint";
   const PROGRAM_URL = "https://www.imd.org/sprint/leadership-ai/";
+
+  /* --- dropdown menu --- */
+  const menuBtn = document.getElementById("btn-menu");
+  const menu = document.getElementById("menu");
+  function setMenu(open) {
+    menu.hidden = !open;
+    menuBtn.setAttribute("aria-expanded", String(open));
+  }
+  menuBtn.addEventListener("click", (e) => { e.stopPropagation(); setMenu(menu.hidden); });
+  menu.addEventListener("click", () => setMenu(false));
+  document.addEventListener("click", (e) => { if (!menu.hidden && !menu.contains(e.target)) setMenu(false); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") setMenu(false); });
 
   /* --- editing behaviour: single line, plain text only --- */
   document.querySelectorAll("[contenteditable]").forEach((el) => {
