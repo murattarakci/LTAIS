@@ -170,7 +170,6 @@
   <div class="filters">
     <button class="filter-btn" id="f-today">Today only</button>
     <button class="filter-btn" id="f-named">Completed with name</button>
-    <button class="filter-btn" id="f-rank">Rank by contrast</button>
   </div>
 </header>
 
@@ -208,7 +207,6 @@ document.getElementById("gate-form").addEventListener("submit", async (e) => {
 let cards = [];
 let todayOnly = false;
 let namedOnly = false;
-let rankOn = false;
 let started = false;
 let db = null, fsDoc = null, fsSetDoc = null;
 
@@ -273,9 +271,11 @@ function render() {
     if (namedOnly && !(c.name && c.blank1 && c.blank2)) return false;
     return true;
   });
+  // default order: biggest contrast first (flagged always last, newest first until scored)
   shown.sort((a, b) => {
-    if (a.flagged !== b.flagged) return a.flagged ? 1 : -1; // flagged last, always
-    if (rankOn) return (b.score ?? -1) - (a.score ?? -1);
+    if (a.flagged !== b.flagged) return a.flagged ? 1 : -1;
+    const byScore = (b.score ?? -1) - (a.score ?? -1);
+    if (byScore !== 0) return byScore;
     return (b.ts?.getTime() ?? 0) - (a.ts?.getTime() ?? 0);
   });
 
@@ -340,9 +340,6 @@ document.getElementById("f-today").addEventListener("click", (e) => {
 });
 document.getElementById("f-named").addEventListener("click", (e) => {
   namedOnly = !namedOnly; e.target.classList.toggle("active", namedOnly); render();
-});
-document.getElementById("f-rank").addEventListener("click", (e) => {
-  rankOn = !rankOn; e.target.classList.toggle("active", rankOn); render();
 });
 
 /* ---------- data ---------- */
