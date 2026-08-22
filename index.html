@@ -113,11 +113,26 @@
   .exporting .blank:empty::before { content: ""; }
   .exporting [contenteditable]:focus { background: transparent; }
 
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 2%;
+  }
+
   .byline {
     color: rgba(255, 255, 255, 0.75);
     font-weight: 300;
     font-size: 2.6cqw;
     letter-spacing: 0.02em;
+  }
+
+  .card-program {
+    color: rgba(255, 255, 255, 0.55);
+    font-weight: 300;
+    font-size: 2.1cqw;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
   }
   .byline .who {
     min-width: 6em;
@@ -182,6 +197,47 @@
     max-width: 520px;
   }
 
+  .promo {
+    margin-top: 46px;
+    width: 100%;
+    max-width: 840px;
+    background: var(--imd-navy);
+    background-image: radial-gradient(rgba(255,255,255,0.14) 1px, transparent 1px);
+    background-size: 22px 22px;
+    border-radius: 6px;
+    padding: 34px 38px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .promo-text h2 {
+    color: var(--imd-white);
+    font-weight: 700;
+    font-size: clamp(19px, 2.6vw, 24px);
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+  }
+  .promo-text p {
+    color: var(--imd-light-blue);
+    font-weight: 300;
+    font-size: 15px;
+    max-width: 480px;
+  }
+  .promo a.btn-promo {
+    background: var(--imd-white);
+    color: var(--imd-navy);
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px 26px;
+    border-radius: 999px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: transform 0.08s ease, box-shadow 0.15s ease;
+  }
+  .promo a.btn-promo:hover { box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); transform: translateY(-1px); }
+
   .toast {
     position: fixed;
     bottom: 26px;
@@ -227,7 +283,10 @@
 
     <div>
       <p class="statement" id="statement"><span contenteditable="true" spellcheck="false">My job as a leader is not</span> <span class="blank" contenteditable="true" spellcheck="false" data-ph="having answers"></span><span contenteditable="true" spellcheck="false">, but</span> <span class="blank" contenteditable="true" spellcheck="false" data-ph="asking questions"></span><span contenteditable="true" spellcheck="false">.</span></p>
-      <p class="byline">— <span class="who" contenteditable="true" spellcheck="false" data-ph="your name"></span></p>
+      <div class="card-footer">
+        <p class="byline">— <span class="who" contenteditable="true" spellcheck="false" data-ph="your name"></span></p>
+        <p class="card-program">imd.org/sprint/leadership-ai</p>
+      </div>
     </div>
   </div>
 </div>
@@ -255,6 +314,14 @@
 
 <p class="share-note">Sharing opens a pre-filled post with your statement. Your card image downloads automatically — attach it to the post before publishing.</p>
 
+<footer class="promo">
+  <div class="promo-text">
+    <h2>Leading in the Age of AI — an IMD Sprint</h2>
+    <p>This exercise is part of IMD's Leadership in the Age of AI Sprint. Rewire how you lead when AI joins the team.</p>
+  </div>
+  <a class="btn-promo" href="https://www.imd.org/sprint/leadership-ai/" target="_blank" rel="noopener">Explore the program →</a>
+</footer>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -262,6 +329,7 @@
   const card = document.getElementById("card");
   const toast = document.getElementById("toast");
   const HASHTAGS = "#Leadership #IMD #AILeadershipSprint";
+  const PROGRAM_URL = "https://www.imd.org/sprint/leadership-ai/";
 
   /* --- editing behaviour: single line, plain text only --- */
   document.querySelectorAll("[contenteditable]").forEach((el) => {
@@ -293,7 +361,7 @@
   }
 
   function shareText() {
-    return statementText() + "\n\n" + HASHTAGS;
+    return statementText() + "\n\n" + HASHTAGS + "\n" + PROGRAM_URL;
   }
 
   /* --- image export --- */
