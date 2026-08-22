@@ -133,7 +133,9 @@
     font-size: 2.1cqw;
     letter-spacing: 0.03em;
     white-space: nowrap;
+    text-decoration: none;
   }
+  .card-program:hover { color: rgba(255, 255, 255, 0.85); text-decoration: underline; }
   .byline .who {
     min-width: 6em;
     display: inline-block;
@@ -179,47 +181,6 @@
   }
   .btn-outline:hover { background: var(--imd-light-blue); }
   .btn svg { width: 17px; height: 17px; flex: none; }
-
-  .promo {
-    margin-top: 46px;
-    width: 100%;
-    max-width: 840px;
-    background: var(--imd-navy);
-    background-image: radial-gradient(rgba(255,255,255,0.14) 1px, transparent 1px);
-    background-size: 22px 22px;
-    border-radius: 6px;
-    padding: 34px 38px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-    flex-wrap: wrap;
-  }
-  .promo-text h2 {
-    color: var(--imd-white);
-    font-weight: 700;
-    font-size: clamp(19px, 2.6vw, 24px);
-    letter-spacing: -0.01em;
-    margin-bottom: 8px;
-  }
-  .promo-text p {
-    color: var(--imd-light-blue);
-    font-weight: 300;
-    font-size: 15px;
-    max-width: 480px;
-  }
-  .promo a.btn-promo {
-    background: var(--imd-white);
-    color: var(--imd-navy);
-    font-weight: 700;
-    font-size: 15px;
-    padding: 14px 26px;
-    border-radius: 999px;
-    text-decoration: none;
-    white-space: nowrap;
-    transition: transform 0.08s ease, box-shadow 0.15s ease;
-  }
-  .promo a.btn-promo:hover { box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); transform: translateY(-1px); }
 
   .toast {
     position: fixed;
@@ -268,7 +229,7 @@
       <p class="statement" id="statement"><span contenteditable="true" spellcheck="false">My job as a leader is not</span> <span class="blank" contenteditable="true" spellcheck="false" data-ph="having answers"></span><span contenteditable="true" spellcheck="false">, but</span> <span class="blank" contenteditable="true" spellcheck="false" data-ph="asking questions"></span><span contenteditable="true" spellcheck="false">.</span></p>
       <div class="card-footer">
         <p class="byline">— <span class="who" contenteditable="true" spellcheck="false" data-ph="your name"></span></p>
-        <p class="card-program">imd.org/sprint/leadership-ai</p>
+        <a class="card-program" href="https://www.imd.org/sprint/leadership-ai/" target="_blank" rel="noopener">imd.org/sprint/leadership-ai</a>
       </div>
     </div>
   </div>
@@ -292,14 +253,6 @@
     Share image…
   </button>
 </div>
-
-<footer class="promo">
-  <div class="promo-text">
-    <h2>Leading in the Age of AI: an IMD Sprint</h2>
-    <p>This exercise is part of IMD's Leadership in the Age of AI Sprint. Rewire how you lead when AI joins the team.</p>
-  </div>
-  <a class="btn-promo" href="https://www.imd.org/sprint/leadership-ai/" target="_blank" rel="noopener">Explore the program →</a>
-</footer>
 
 <div class="toast" id="toast"></div>
 
