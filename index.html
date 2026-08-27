@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Redefine Your Job as a Leader | IMD AI Leadership Sprint</title>
 <meta name="description" content="Fill in the blanks and redefine your job as a leader. Download your card or share it on LinkedIn and X.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Redefine Your Job as a Leader">
+<meta property="og:description" content="Fill in the blanks and redefine your job as a leader. Part of IMD's Leading in the Age of AI Sprint.">
+<meta property="og:url" content="https://murattarakci.github.io/LTAIS/">
+<meta property="og:image" content="https://murattarakci.github.io/LTAIS/assets/og-card.png">
+<meta property="og:image:width" content="1752">
+<meta property="og:image:height" content="918">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://murattarakci.github.io/LTAIS/assets/og-card.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -421,19 +430,50 @@
 
   document.getElementById("btn-download").addEventListener("click", () => downloadCard(false));
 
-  /* --- social sharing: open pre-filled composer + download image to attach --- */
-  document.getElementById("btn-linkedin").addEventListener("click", () => {
-    const url = "https://www.linkedin.com/feed/?shareActive=true&text=" + encodeURIComponent(shareText());
-    window.open(url, "_blank", "noopener");
+  /* --- social sharing, device-aware ---
+     Phones/tablets: the native share sheet carries the card image itself.
+     Desktop: open the pre-filled composer + download the image to attach. */
+  const canShareFiles = !!(navigator.canShare &&
+    navigator.canShare({ files: [new File([""], "card.png", { type: "image/png" })] }));
+
+  async function nativeShareWithImage() {
+    try {
+      const dataUrl = await renderCard();
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], "my-leadership-card.png", { type: "image/png" });
+      await navigator.share({ files: [file], text: shareText() });
+      return true;
+    } catch (err) {
+      if (err.name === "AbortError") return true; // user closed the sheet on purpose
+      console.warn("native share failed, falling back", err);
+      return false;
+    }
+  }
+
+  async function socialShare(intentUrl, attachMsg, appName) {
+    if (canShareFiles) {
+      showToast("Opening share… pick " + appName + " and your card is attached.");
+      if (await nativeShareWithImage()) return;
+    }
+    window.open(intentUrl, "_blank", "noopener");
     downloadCard(true);
-    showToast("Image downloaded. Attach it to your LinkedIn post.");
+    showToast(attachMsg);
+  }
+
+  document.getElementById("btn-linkedin").addEventListener("click", () => {
+    socialShare(
+      "https://www.linkedin.com/feed/?shareActive=true&text=" + encodeURIComponent(shareText()),
+      "Image downloaded. Attach it to your LinkedIn post.",
+      "LinkedIn"
+    );
   });
 
   document.getElementById("btn-x").addEventListener("click", () => {
-    const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(shareText());
-    window.open(url, "_blank", "noopener");
-    downloadCard(true);
-    showToast("Image downloaded. Attach it to your post on X.");
+    socialShare(
+      "https://twitter.com/intent/tweet?text=" + encodeURIComponent(shareText()),
+      "Image downloaded. Attach it to your post on X.",
+      "X"
+    );
   });
 
   /* --- email signature: rich text on the clipboard, ready to paste into Outlook --- */
