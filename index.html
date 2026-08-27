@@ -433,7 +433,10 @@
   /* --- social sharing, device-aware ---
      Phones/tablets: the native share sheet carries the card image itself.
      Desktop: open the pre-filled composer + download the image to attach. */
-  const canShareFiles = !!(navigator.canShare &&
+  // a real phone/tablet: touch-first device AND the share sheet accepts files.
+  // (Desktop Safari/Chrome on macOS also pass the file check, so capability alone is not enough.)
+  const isTouchDevice = matchMedia("(hover: none) and (pointer: coarse)").matches;
+  const canShareFiles = isTouchDevice && !!(navigator.canShare &&
     navigator.canShare({ files: [new File([""], "card.png", { type: "image/png" })] }));
 
   async function nativeShareWithImage() {
@@ -452,12 +455,12 @@
 
   async function socialShare(intentUrl, attachMsg, appName) {
     if (canShareFiles) {
-      showToast("Opening share… pick " + appName + " and your card is attached.");
       if (await nativeShareWithImage()) return;
     }
-    window.open(intentUrl, "_blank", "noopener");
+    const w = window.open(intentUrl, "_blank", "noopener");
     downloadCard(true);
-    showToast(attachMsg);
+    showToast(w ? attachMsg
+                : "Popup blocked. Image downloaded — open " + appName + " and attach it.");
   }
 
   document.getElementById("btn-linkedin").addEventListener("click", () => {
