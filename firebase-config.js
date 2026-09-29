@@ -31,3 +31,6 @@ window.FIREBASE_CONFIG = {
   messagingSenderId: "953468160360",
   appId: "1:953468160360:web:3d1388541e46bc1b2faedd"
 };
+
+// Firestore collection for this site's cards (the DNV site uses "dnv-cards").
+window.CARDS_COLLECTION = "cards";

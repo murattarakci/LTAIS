@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Redefine Your Job as a Leader | IMD AI Leadership Sprint</title>
+<title>Rewiring Leadership for Adding Value in the Age of AI | IMD AI Leadership Sprint</title>
 <meta name="description" content="Fill in the blanks and redefine your job as a leader. Download your card or share it on LinkedIn and X.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Redefine Your Job as a Leader">
+<meta property="og:title" content="Rewiring Leadership for Adding Value in the Age of AI">
 <meta property="og:description" content="Fill in the blanks and redefine your job as a leader. Part of IMD's Leading in the Age of AI Sprint.">
 <meta property="og:url" content="https://murattarakci.github.io/LTAIS/">
 <meta property="og:image" content="https://murattarakci.github.io/LTAIS/assets/og-card.png">
@@ -107,7 +107,7 @@
     background: rgba(255, 255, 255, 0.08);
   }
 
-  .blank {
+  .blank, .proc {
     color: #9FE1FF;
     padding: 0 0.1em;
     text-decoration: underline;
@@ -116,20 +116,20 @@
     text-underline-offset: 0.18em;
   }
   /* while empty, show the classic blank line to type on */
-  .blank:empty {
+  .blank:empty, .proc:empty {
     display: inline-block;
     min-width: 3.5em;
     text-align: center;
     text-decoration: none;
     border-bottom: 0.12em solid rgba(255, 255, 255, 0.55);
   }
-  .blank:empty::before {
+  .blank:empty::before, .proc:empty::before {
     content: attr(data-ph);
     color: rgba(255, 255, 255, 0.32);
     font-weight: 300;
   }
   /* hide placeholder hints in the exported image */
-  .exporting .blank:empty::before { content: ""; }
+  .exporting .blank:empty::before, .exporting .proc:empty::before { content: ""; }
   .exporting [contenteditable]:focus { background: transparent; }
 
   .card-footer {
@@ -265,8 +265,8 @@
 <body>
 
 <div class="intro">
-  <h1>Redefine Your Job as a Leader</h1>
-  <p>Fill in the blanks. <strong>Everything on the card is editable</strong>, just tap the text.</p>
+  <h1>Rewiring Leadership for Adding Value in the Age of AI</h1>
+  <p>Pick a process you own, then fill in the blanks. <strong>Everything on the card is editable</strong>, just tap the text.</p>
 </div>
 
 <div class="card-wrap">
@@ -282,7 +282,7 @@
     </div>
 
     <div>
-      <p class="statement" id="statement"><span contenteditable="true" spellcheck="true">My job as a leader is not</span> <span class="blank" contenteditable="true" spellcheck="true" data-ph="having answers"></span><span contenteditable="true" spellcheck="true">, but</span> <span class="blank" contenteditable="true" spellcheck="true" data-ph="asking questions"></span><span contenteditable="true" spellcheck="true">.</span></p>
+      <p class="statement" id="statement"><span contenteditable="true" spellcheck="true">In</span> <span class="proc" contenteditable="true" spellcheck="true" data-ph="hiring"></span><span contenteditable="true" spellcheck="true">, our job is not</span> <span class="blank" contenteditable="true" spellcheck="true" data-ph="sorting CVs"></span><span contenteditable="true" spellcheck="true">, but</span> <span class="blank" contenteditable="true" spellcheck="true" data-ph="finding what a CV can&#39;t show"></span><span contenteditable="true" spellcheck="true">.</span></p>
       <div class="card-footer">
         <p class="byline">— <span class="who" contenteditable="true" spellcheck="true" data-ph="your name"></span></p>
         <a class="card-program" href="https://www.imd.org/sprint/leadership-ai/" target="_blank" rel="noopener">imd.org/sprint/leadership-ai</a>
@@ -378,7 +378,8 @@
     const parts = [];
     document.querySelectorAll("#statement > span").forEach((s) => {
       const t = s.textContent.trim();
-      parts.push(s.classList.contains("blank") ? (t || "____") : t);
+      const isField = s.classList.contains("blank") || s.classList.contains("proc");
+      parts.push(isField ? (t || "____") : t);
     });
     // join with spaces, then tidy space before punctuation
     return parts.join(" ").replace(/\s+([,.])/g, "$1");
@@ -393,6 +394,7 @@
     const blanks = document.querySelectorAll("#statement .blank");
     return {
       statement: statementText(),
+      process: document.querySelector("#statement .proc").textContent.trim(),
       blank1: blanks[0].textContent.trim(),
       blank2: blanks[1].textContent.trim(),
       name: document.querySelector(".byline .who").textContent.trim()
@@ -486,16 +488,21 @@
 
   function signatureHTML() {
     const d = window.__cardData();
-    const b1 = d.blank1 ? '<span style="color:#005DC4;">' + escHtml(d.blank1) + "</span>" : "____";
-    const b2 = d.blank2 ? '<span style="color:#005DC4;">' + escHtml(d.blank2) + "</span>" : "____";
-    const stmt = document.querySelectorAll("#statement > span");
-    const p1 = escHtml(stmt[0].textContent.trim());
-    const p2 = escHtml(stmt[2].textContent.trim().replace(/^,\s*/, ""));
+    // walk the spans so the signature follows whatever the sentence says
+    const parts = [];
+    document.querySelectorAll("#statement > span").forEach((el) => {
+      const t = el.textContent.trim();
+      const isField = el.classList.contains("blank") || el.classList.contains("proc");
+      parts.push(isField
+        ? (t ? '<span style="color:#005DC4;">' + escHtml(t) + "</span>" : "____")
+        : escHtml(t));
+    });
+    const sentence = parts.join(" ").replace(/\s+([,.])/g, "$1");
     return (
       '<table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,Helvetica,sans-serif;">' +
       '<tr><td style="border-left:3px solid #005DC4;padding:4px 0 4px 14px;">' +
       '<div style="font-size:15px;line-height:1.45;color:#000A56;font-weight:bold;">&ldquo;' +
-      p1 + " " + b1 + ", " + p2 + " " + b2 + '.&rdquo;</div>' +
+      sentence + '&rdquo;</div>' +
       (d.name ? '<div style="font-size:13px;color:#000A56;padding-top:5px;">' + escHtml(d.name) + "</div>" : "") +
       '<div style="font-size:12px;padding-top:3px;"><a href="' + PROGRAM_URL +
       '" style="color:#005DC4;text-decoration:none;">IMD / Leading in the Age of AI Sprint</a></div>' +
@@ -546,8 +553,8 @@ if (window.FIREBASE_CONFIG) {
     async function submitCard() {
       try {
         const data = window.__cardData();
-        if (!data.blank1 && !data.blank2 && !data.name) return; // untouched card
-        await setDoc(doc(db, "cards", cardId), { ...data, ts: serverTimestamp() }, { merge: true });
+        if (!data.process && !data.blank1 && !data.blank2 && !data.name) return; // untouched card
+        await setDoc(doc(db, window.CARDS_COLLECTION, cardId), { ...data, ts: serverTimestamp() }, { merge: true });
       } catch (e) { console.warn("card submit failed", e); }
     }
 
