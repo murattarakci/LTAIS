@@ -229,6 +229,47 @@
   .menu-item:hover { background: var(--imd-light-blue); }
   .menu-item svg { width: 17px; height: 17px; flex: none; color: var(--imd-blue); }
 
+  /* ---------- Email-my-card dialog ---------- */
+  .email-dlg {
+    margin: auto;
+    border: none;
+    border-radius: 16px;
+    padding: 28px 28px 24px;
+    width: min(420px, calc(100vw - 32px));
+    color: var(--imd-navy);
+    box-shadow: 0 18px 50px rgba(0, 10, 86, 0.3);
+  }
+  .email-dlg::backdrop { background: rgba(0, 10, 86, 0.45); }
+  .email-dlg h2 { margin: 0 0 16px; font-size: 20px; font-weight: 700; }
+  .email-dlg p { margin: 0 0 16px; font-size: 14px; font-weight: 300; line-height: 1.45; }
+  .email-dlg input[type="email"] {
+    width: 100%;
+    font-family: inherit;
+    font-size: 16px;
+    padding: 12px 14px;
+    border: 1.5px solid rgba(0, 10, 86, 0.25);
+    border-radius: 10px;
+    color: var(--imd-navy);
+  }
+  .email-dlg input[type="email"]:focus { outline: none; border-color: var(--imd-blue); }
+  .email-dlg .optin {
+    display: flex;
+    gap: 9px;
+    align-items: flex-start;
+    margin: 12px 0 0;
+    font-size: 13px;
+    font-weight: 300;
+    line-height: 1.4;
+    cursor: pointer;
+  }
+  .email-dlg .optin input { margin-top: 2px; accent-color: var(--imd-blue); }
+  .email-dlg .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+  .email-dlg .row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+  .email-dlg .btn { padding: 11px 22px; }
+  .email-dlg .btn.ghost { background: transparent; color: var(--imd-blue); }
+  .email-dlg .btn:disabled { opacity: 0.5; cursor: default; box-shadow: none; }
+  .email-dlg .err { color: #B3261E; font-size: 13px; margin-top: 10px; min-height: 1em; }
+
   .fac-link {
     margin-top: 56px;
     font-size: 12px;
@@ -299,6 +340,10 @@
       <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
     </button>
     <div class="menu" id="menu" hidden>
+      <button class="menu-item" id="btn-email" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+        Email my card to me
+      </button>
       <button class="menu-item" id="btn-download">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Download card
@@ -318,6 +363,22 @@
     </div>
   </div>
 </div>
+
+<dialog class="email-dlg" id="email-dlg">
+  <form id="email-form" novalidate>
+    <h2>Email my card to me</h2>
+    <input type="email" id="email-input" placeholder="you@company.com" autocomplete="email" required>
+    <!-- honeypot: people never see this field; bots fill it in -->
+    <input type="text" class="hp" id="email-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <label class="optin"><input type="checkbox" id="email-quote"> IMD may quote my card, without my name, in articles and research.</label>
+    <label class="optin"><input type="checkbox" id="email-contact"> IMD may email me about its programs on leadership and AI.</label>
+    <div class="err" id="email-err"></div>
+    <div class="row">
+      <button type="button" class="btn ghost" id="email-cancel">Cancel</button>
+      <button type="submit" class="btn" id="email-send">Send</button>
+    </div>
+  </form>
+</dialog>
 
 <a class="fac-link" href="facilitator.html">Facilitator View</a>
 
@@ -431,6 +492,70 @@
   }
 
   document.getElementById("btn-download").addEventListener("click", () => downloadCard(false));
+
+  /* --- email the card (Power Automate flow sends it from an IMD mailbox) ---
+     The menu item stays hidden until EMAIL_FLOW_URL is set. See EMAIL-SETUP.md. */
+  const EMAIL_FLOW_URL = "https://defaultd3113834f50947508faf7c92d55114.9c.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/00/workflows/0e8d1eda82174e97bdbba685fbba3b4c/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=1B9GycjWEveSukZDZIcr963pR2mLJdC6hi1lwR3PHJU";
+  const MAX_EMAILS_PER_VISIT = 3;
+  const emailBtn = document.getElementById("btn-email");
+  const dlg = document.getElementById("email-dlg");
+  const emailInput = document.getElementById("email-input");
+  const emailErr = document.getElementById("email-err");
+  const sendBtn = document.getElementById("email-send");
+  if (EMAIL_FLOW_URL) emailBtn.hidden = false;
+
+  emailBtn.addEventListener("click", () => {
+    emailErr.textContent = "";
+    dlg.showModal();
+    emailInput.focus();
+  });
+  document.getElementById("email-cancel").addEventListener("click", () => dlg.close());
+
+  document.getElementById("email-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = emailInput.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      emailErr.textContent = "Please check the email address.";
+      return;
+    }
+    // a bot filled the hidden field: act as if it worked, send nothing
+    if (document.getElementById("email-hp").value) { dlg.close(); showToast("Card sent ✓"); return; }
+    const sent = +(sessionStorage.getItem("emailsSent") || 0);
+    if (sent >= MAX_EMAILS_PER_VISIT) {
+      emailErr.textContent = "You have already sent this card a few times. Please use Download instead.";
+      return;
+    }
+    sendBtn.disabled = true;
+    sendBtn.textContent = "Sending…";
+    emailErr.textContent = "";
+    try {
+      const dataUrl = await renderCard();
+      const data = window.__cardData();
+      const res = await fetch(EMAIL_FLOW_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          name: data.name,
+          statement: data.statement,
+          quoteOk: document.getElementById("email-quote").checked,
+          contactOk: document.getElementById("email-contact").checked,
+          cardId: sessionStorage.getItem("cardId") || "",
+          image: dataUrl.split(",")[1]
+        })
+      });
+      if (!res.ok) throw new Error("flow returned " + res.status);
+      sessionStorage.setItem("emailsSent", String(sent + 1));
+      dlg.close();
+      showToast("Your card is on its way to " + email + ". It can take up to an hour.");
+    } catch (err) {
+      console.error(err);
+      emailErr.textContent = "Could not send the card. Please try again, or use Download.";
+    } finally {
+      sendBtn.disabled = false;
+      sendBtn.textContent = "Send";
+    }
+  });
 
   /* --- social sharing, device-aware ---
      Phones/tablets: the native share sheet carries the card image itself.
@@ -558,16 +683,17 @@ if (window.FIREBASE_CONFIG) {
       } catch (e) { console.warn("card submit failed", e); }
     }
 
-    for (const id of ["btn-download", "btn-linkedin", "btn-x", "btn-signature"]) {
+    for (const id of ["btn-download", "btn-linkedin", "btn-x", "btn-signature", "email-send"]) {
       document.getElementById(id).addEventListener("click", submitCard);
     }
 
-    // auto-record while typing (debounced), so cards appear even without a click
+    // auto-record after a pause in typing, so cards appear even without a click.
+    // A 5-second pause keeps saves to a few per person (Firestore quota with large groups).
     let t;
     document.querySelectorAll("#card [contenteditable]").forEach((el) => {
       el.addEventListener("input", () => {
         clearTimeout(t);
-        t = setTimeout(submitCard, 1200);
+        t = setTimeout(submitCard, 5000);
       });
       el.addEventListener("blur", submitCard);
     });
