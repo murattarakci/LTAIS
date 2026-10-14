@@ -12,8 +12,8 @@ Time needed: about 30 minutes.
 ## 1. Make the Excel file
 
 1. In OneDrive (IMD account), create a workbook called `LTAIS card emails.xlsx`.
-2. In row 1, type these headers: `Timestamp`, `Email`, `Name`, `Statement`, `QuoteOK`, `ContactOK`, `CardId`.
-3. Select A1:G1, then Insert > Table, tick "My table has headers".
+2. In row 1, type these headers: `Timestamp`, `Email`, `Name`, `Statement`, `ContactOK`, `CardId`.
+3. Select A1:F1, then Insert > Table, tick "My table has headers".
 4. Table Design > Table Name: `Emails`.
 
 ## 2. Build the flow
@@ -33,7 +33,6 @@ Go to make.powerautomate.com > Create > Instant cloud flow > Skip.
     "email":     { "type": "string" },
     "name":      { "type": "string" },
     "statement": { "type": "string" },
-    "quoteOk":   { "type": "boolean" },
     "contactOk": { "type": "boolean" },
     "cardId":    { "type": "string" },
     "image":     { "type": "string" }
@@ -90,7 +89,6 @@ You need "Send as" rights on that mailbox.
 - Table: `Emails`
 - Timestamp (expression): `utcNow()`
 - Email, Name, Statement, CardId: the matching dynamic content
-- QuoteOK (expression): `if(equals(triggerBody()?['quoteOk'], true), 'yes', 'no')`
 - ContactOK (expression): `if(equals(triggerBody()?['contactOk'], true), 'yes', 'no')`
 
 ### Step 5: Response
@@ -117,8 +115,6 @@ send it to Claude (or paste it into `EMAIL_FLOW_URL` in `index.html`). The
 - **Opt-outs:** when someone replies "remove", delete their row in the Excel
   file. Only email people with `ContactOK = yes` about programs, and give every
   such email an unsubscribe line.
-- **Quoting cards:** quote only cards whose row says `QuoteOK = yes`, and leave
-  the name off. Match a row to its card in the facilitator view through `CardId`.
 - **Between cohorts:** turn the flow off (My flows > ... > Turn off). The menu
   item stays visible but sending fails politely and points people to Download.
 - **If the URL ever leaks into misuse:** delete the trigger and add it again.

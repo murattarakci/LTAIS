@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rewiring Leadership for Adding Value in the Age of AI | IMD AI Leadership Sprint</title>
-<meta name="description" content="Fill in the blanks and redefine your job as a leader. Download your card or share it on LinkedIn and X.">
+<meta name="description" content="Fill in the blanks and redefine your job as a leader. Email or download your card.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Rewiring Leadership for Adding Value in the Age of AI">
 <meta property="og:description" content="Fill in the blanks and redefine your job as a leader. Part of IMD's Leading in the Age of AI Sprint.">
@@ -336,7 +336,7 @@
   <div class="menu-wrap">
     <button class="btn" id="btn-menu" aria-haspopup="true" aria-expanded="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/></svg>
-      Share or download
+      Email or download
       <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
     </button>
     <div class="menu" id="menu" hidden>
@@ -348,18 +348,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Download card
       </button>
-      <button class="menu-item" id="btn-linkedin">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
-        Share on LinkedIn
-      </button>
-      <button class="menu-item" id="btn-x">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.64 7.58H.47l8.6-9.83L0 1.15h7.59l5.24 6.93 6.07-6.93zm-1.29 19.5h2.04L6.49 3.24H4.3l13.31 17.41z"/></svg>
-        Share on X
-      </button>
-      <button class="menu-item" id="btn-signature">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
-        Copy as email signature
-      </button>
     </div>
   </div>
 </div>
@@ -370,7 +358,6 @@
     <input type="email" id="email-input" placeholder="you@company.com" autocomplete="email" required>
     <!-- honeypot: people never see this field; bots fill it in -->
     <input type="text" class="hp" id="email-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
-    <label class="optin"><input type="checkbox" id="email-quote"> IMD may quote my card, without my name, in articles and research.</label>
     <label class="optin"><input type="checkbox" id="email-contact"> IMD may email me about its programs on leadership and AI.</label>
     <div class="err" id="email-err"></div>
     <div class="row">
@@ -388,8 +375,6 @@
 (function () {
   const card = document.getElementById("card");
   const toast = document.getElementById("toast");
-  const HASHTAGS = "#Leadership #IMD #AILeadershipSprint";
-  const PROGRAM_URL = "https://www.imd.org/sprint/leadership-ai/";
 
   /* --- dropdown menu --- */
   const menuBtn = document.getElementById("btn-menu");
@@ -446,9 +431,6 @@
     return parts.join(" ").replace(/\s+([,.])/g, "$1");
   }
 
-  function shareText() {
-    return statementText() + "\n\n" + HASHTAGS + "\n" + PROGRAM_URL;
-  }
 
   // data for the facilitator view (submitted by the module script below)
   window.__cardData = function () {
@@ -538,7 +520,6 @@
           email,
           name: data.name,
           statement: data.statement,
-          quoteOk: document.getElementById("email-quote").checked,
           contactOk: document.getElementById("email-contact").checked,
           cardId: sessionStorage.getItem("cardId") || "",
           image: dataUrl.split(",")[1]
@@ -554,106 +535,6 @@
     } finally {
       sendBtn.disabled = false;
       sendBtn.textContent = "Send";
-    }
-  });
-
-  /* --- social sharing, device-aware ---
-     Phones/tablets: the native share sheet carries the card image itself.
-     Desktop: open the pre-filled composer + download the image to attach. */
-  // a real phone/tablet: touch-first device AND the share sheet accepts files.
-  // (Desktop Safari/Chrome on macOS also pass the file check, so capability alone is not enough.)
-  const isTouchDevice = matchMedia("(hover: none) and (pointer: coarse)").matches;
-  const canShareFiles = isTouchDevice && !!(navigator.canShare &&
-    navigator.canShare({ files: [new File([""], "card.png", { type: "image/png" })] }));
-
-  async function nativeShareWithImage() {
-    try {
-      const dataUrl = await renderCard();
-      const blob = await (await fetch(dataUrl)).blob();
-      const file = new File([blob], "my-leadership-card.png", { type: "image/png" });
-      await navigator.share({ files: [file], text: shareText() });
-      return true;
-    } catch (err) {
-      if (err.name === "AbortError") return true; // user closed the sheet on purpose
-      console.warn("native share failed, falling back", err);
-      return false;
-    }
-  }
-
-  async function socialShare(intentUrl, attachMsg, appName) {
-    if (canShareFiles) {
-      if (await nativeShareWithImage()) return;
-    }
-    const w = window.open(intentUrl, "_blank", "noopener");
-    downloadCard(true);
-    showToast(w ? attachMsg
-                : "Popup blocked. Image downloaded — open " + appName + " and attach it.");
-  }
-
-  document.getElementById("btn-linkedin").addEventListener("click", () => {
-    socialShare(
-      "https://www.linkedin.com/feed/?shareActive=true&text=" + encodeURIComponent(shareText()),
-      "Image downloaded. Attach it to your LinkedIn post.",
-      "LinkedIn"
-    );
-  });
-
-  document.getElementById("btn-x").addEventListener("click", () => {
-    socialShare(
-      "https://twitter.com/intent/tweet?text=" + encodeURIComponent(shareText()),
-      "Image downloaded. Attach it to your post on X.",
-      "X"
-    );
-  });
-
-  /* --- email signature: rich text on the clipboard, ready to paste into Outlook --- */
-  function escHtml(s) {
-    return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  }
-
-  function signatureHTML() {
-    const d = window.__cardData();
-    // walk the spans so the signature follows whatever the sentence says
-    const parts = [];
-    document.querySelectorAll("#statement > span").forEach((el) => {
-      const t = el.textContent.trim();
-      const isField = el.classList.contains("blank") || el.classList.contains("proc");
-      parts.push(isField
-        ? (t ? '<span style="color:#005DC4;">' + escHtml(t) + "</span>" : "____")
-        : escHtml(t));
-    });
-    const sentence = parts.join(" ").replace(/\s+([,.])/g, "$1");
-    return (
-      '<table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,Helvetica,sans-serif;">' +
-      '<tr><td style="border-left:3px solid #005DC4;padding:4px 0 4px 14px;">' +
-      '<div style="font-size:15px;line-height:1.45;color:#000A56;font-weight:bold;">&ldquo;' +
-      sentence + '&rdquo;</div>' +
-      (d.name ? '<div style="font-size:13px;color:#000A56;padding-top:5px;">' + escHtml(d.name) + "</div>" : "") +
-      '<div style="font-size:12px;padding-top:3px;"><a href="' + PROGRAM_URL +
-      '" style="color:#005DC4;text-decoration:none;">IMD / Leading in the Age of AI Sprint</a></div>' +
-      "</td></tr></table>"
-    );
-  }
-
-  document.getElementById("btn-signature").addEventListener("click", async () => {
-    const html = signatureHTML();
-    const plain = shareText();
-    try {
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          "text/html": new Blob([html], { type: "text/html" }),
-          "text/plain": new Blob([plain], { type: "text/plain" })
-        })
-      ]);
-      showToast("Signature copied. In Outlook: Settings → Signatures → paste.");
-    } catch (err) {
-      try {
-        await navigator.clipboard.writeText(plain);
-        showToast("Copied as plain text. Paste it into your Outlook signature.");
-      } catch (e2) {
-        console.error(err, e2);
-        showToast("Could not copy. Select the card text and copy it manually.");
-      }
     }
   });
 })();
@@ -683,7 +564,7 @@ if (window.FIREBASE_CONFIG) {
       } catch (e) { console.warn("card submit failed", e); }
     }
 
-    for (const id of ["btn-download", "btn-linkedin", "btn-x", "btn-signature", "email-send"]) {
+    for (const id of ["btn-download", "email-send"]) {
       document.getElementById(id).addEventListener("click", submitCard);
     }
 
