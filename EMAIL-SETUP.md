@@ -12,8 +12,8 @@ Time needed: about 30 minutes.
 ## 1. Make the Excel file
 
 1. In OneDrive (IMD account), create a workbook called `LTAIS card emails.xlsx`.
-2. In row 1, type these headers: `Timestamp`, `Email`, `Name`, `Statement`, `ContactOK`, `CardId`.
-3. Select A1:F1, then Insert > Table, tick "My table has headers".
+2. In row 1, type these headers: `Timestamp`, `Email`, `Name`, `Statement`, `CardId`.
+3. Select A1:E1, then Insert > Table, tick "My table has headers".
 4. Table Design > Table Name: `Emails`.
 
 ## 2. Build the flow
@@ -33,7 +33,6 @@ Go to make.powerautomate.com > Create > Instant cloud flow > Skip.
     "email":     { "type": "string" },
     "name":      { "type": "string" },
     "statement": { "type": "string" },
-    "contactOk": { "type": "boolean" },
     "cardId":    { "type": "string" },
     "image":     { "type": "string" }
   },
@@ -89,7 +88,6 @@ You need "Send as" rights on that mailbox.
 - Table: `Emails`
 - Timestamp (expression): `utcNow()`
 - Email, Name, Statement, CardId: the matching dynamic content
-- ContactOK (expression): `if(equals(triggerBody()?['contactOk'], true), 'yes', 'no')`
 
 ### Step 5: Response
 
@@ -101,8 +99,8 @@ You need "Send as" rights on that mailbox.
 
 One mailbox can send about 30 emails a minute, and Excel takes about 100 new
 rows a minute. On the **Send an email** and **Add a row into a table** steps,
-open **Settings** > **Retry policy**: Exponential interval, Count `10`,
-Interval `PT1M`. Emails that hit the limit then wait and go out later.
+open **Settings** > **Retry policy**: Fixed interval, Count `30`,
+Interval `PT2M`. Emails that hit the limit then wait and go out within the hour.
 
 ## 3. Save and copy the URL
 
@@ -112,9 +110,9 @@ send it to Claude (or paste it into `EMAIL_FLOW_URL` in `index.html`). The
 
 ## Good habits
 
-- **Opt-outs:** when someone replies "remove", delete their row in the Excel
-  file. Only email people with `ContactOK = yes` about programs, and give every
-  such email an unsubscribe line.
+- **Use of the list:** the form asks no permission for further contact, so use
+  the addresses only to deliver the card. When someone asks to be removed,
+  delete their row in the Excel file.
 - **Between cohorts:** turn the flow off (My flows > ... > Turn off). The menu
   item stays visible but sending fails politely and points people to Download.
 - **If the URL ever leaks into misuse:** delete the trigger and add it again.

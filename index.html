@@ -252,17 +252,6 @@
     color: var(--imd-navy);
   }
   .email-dlg input[type="email"]:focus { outline: none; border-color: var(--imd-blue); }
-  .email-dlg .optin {
-    display: flex;
-    gap: 9px;
-    align-items: flex-start;
-    margin: 12px 0 0;
-    font-size: 13px;
-    font-weight: 300;
-    line-height: 1.4;
-    cursor: pointer;
-  }
-  .email-dlg .optin input { margin-top: 2px; accent-color: var(--imd-blue); }
   .email-dlg .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
   .email-dlg .row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
   .email-dlg .btn { padding: 11px 22px; }
@@ -358,7 +347,6 @@
     <input type="email" id="email-input" placeholder="you@company.com" autocomplete="email" required>
     <!-- honeypot: people never see this field; bots fill it in -->
     <input type="text" class="hp" id="email-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
-    <label class="optin"><input type="checkbox" id="email-contact"> IMD may email me about its programs on leadership and AI.</label>
     <div class="err" id="email-err"></div>
     <div class="row">
       <button type="button" class="btn ghost" id="email-cancel">Cancel</button>
@@ -520,7 +508,6 @@
           email,
           name: data.name,
           statement: data.statement,
-          contactOk: document.getElementById("email-contact").checked,
           cardId: sessionStorage.getItem("cardId") || "",
           image: dataUrl.split(",")[1]
         })
